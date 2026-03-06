@@ -1,4 +1,4 @@
-const STORAGE_KEY = "mechanics_course_site_v2";
+const STORAGE_KEY = "mechanics_course_site_v3";
 
 let state = loadState();
 let currentView = "home";
@@ -12,9 +12,8 @@ const loginErrorEl = document.getElementById("loginError");
 document.getElementById("loginBtn").addEventListener("click", handleLogin);
 document.getElementById("logoutBtn").addEventListener("click", logout);
 
-document.querySelectorAll(".nav-btn").forEach(btn => {
+document.querySelectorAll(".nav-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
-    setActiveNav(btn.dataset.view);
     renderView(btn.dataset.view);
   });
 });
@@ -24,7 +23,7 @@ init();
 function init() {
   if (state.currentStudent) {
     showApp();
-    renderView(currentView);
+    renderView("home");
   } else {
     showLogin();
   }
@@ -32,8 +31,9 @@ function init() {
 
 function createEmptyProgress() {
   const weeks = {};
-  for (let i = 0; i < courseData.weeks.length; i++) {
-    weeks[i + 1] = {
+
+  for (let i = 1; i <= courseData.weeks.length; i++) {
+    weeks[i] = {
       testDone: false,
       testScore: 0,
       selectedAnswers: [],
@@ -55,6 +55,7 @@ function createEmptyProgress() {
 
 function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
+
   if (!raw) {
     return {
       currentStudent: null,
@@ -64,7 +65,7 @@ function loadState() {
 
   try {
     return JSON.parse(raw);
-  } catch {
+  } catch (error) {
     return {
       currentStudent: null,
       progressByLogin: {}
@@ -78,11 +79,15 @@ function saveState() {
 
 function getCurrentProgress() {
   if (!state.currentStudent) return null;
-  if (!state.progressByLogin[state.currentStudent.login]) {
-    state.progressByLogin[state.currentStudent.login] = createEmptyProgress();
+
+  const login = state.currentStudent.login;
+
+  if (!state.progressByLogin[login]) {
+    state.progressByLogin[login] = createEmptyProgress();
     saveState();
   }
-  return state.progressByLogin[state.currentStudent.login];
+
+  return state.progressByLogin[login];
 }
 
 function handleLogin() {
@@ -90,7 +95,7 @@ function handleLogin() {
   const password = document.getElementById("passwordInput").value.trim();
 
   const found = courseData.students.find(
-    s => s.login === login && s.password === password
+    (student) => student.login === login && student.password === password
   );
 
   if (!found) {
@@ -116,7 +121,6 @@ function handleLogin() {
 function logout() {
   state.currentStudent = null;
   saveState();
-  currentView = "home";
   showLogin();
 }
 
@@ -128,18 +132,21 @@ function showLogin() {
 function showApp() {
   loginScreen.classList.add("hidden");
   appScreen.classList.remove("hidden");
-  studentNameEl.textContent = state.currentStudent.name;
+
+  if (state.currentStudent) {
+    studentNameEl.textContent = state.currentStudent.name;
+  }
 }
 
 function setActiveNav(view) {
   currentView = view;
-  document.querySelectorAll(".nav-btn").forEach(btn => {
+
+  document.querySelectorAll(".nav-btn").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.view === view);
   });
 }
 
 function renderView(view) {
-  currentView = view;
   setActiveNav(view);
 
   if (view === "home") {
@@ -158,7 +165,7 @@ function renderHome() {
         <h2 class="section-title">Пән туралы толық таныстыру</h2>
         <p class="muted">${courseData.intro.replace(/\n/g, "<br><br>")}</p>
 
-        <div class="info-grid" style="margin-top: 18px;">
+        <div class="info-grid" style="margin-top:18px;">
           <div class="info-box">
             <h4>Пән</h4>
             <p>${courseData.subject}</p>
@@ -168,12 +175,12 @@ function renderHome() {
             <p>${courseData.teachers.join("<br>")}</p>
           </div>
           <div class="info-box">
-            <h4>Курс форматы</h4>
-            <p>15 апта • лекция • тест • практика • кері байланыс</p>
+            <h4>Оқу форматы</h4>
+            <p>15 апта, лекция, тест, практика, кері байланыс</p>
           </div>
           <div class="info-box">
             <h4>Қорытынды</h4>
-            <p>Нәтиже + сертификат</p>
+            <p>Нәтиже және сертификат</p>
           </div>
         </div>
 
@@ -184,6 +191,7 @@ function renderHome() {
 
       <div class="card">
         <h2 class="section-title">Бағалау критерийі</h2>
+
         <table class="criteria-table">
           <thead>
             <tr>
@@ -195,7 +203,7 @@ function renderHome() {
           <tbody>
             ${courseData.grading
               .map(
-                item => `
+                (item) => `
                 <tr>
                   <td><b>${item.title}</b></td>
                   <td><b>${item.points}</b></td>
@@ -209,7 +217,7 @@ function renderHome() {
 
         <div class="scale-list">
           ${courseData.scale
-            .map(item => `<div class="scale-item">${item}</div>`)
+            .map((item) => `<div class="scale-item">${item}</div>`)
             .join("")}
         </div>
       </div>
@@ -225,7 +233,7 @@ function renderWeeks() {
       <h2 class="section-title">15 аптаға бөлінген сабақтар</h2>
       <p class="muted">
         Әр аптада 3 бөлім бар: <b>Лекция</b>, <b>Практика</b>, <b>Кері байланыс</b>.
-        Лекцияны оқыған соң 4 тестке жауап бересің. Практикада 2 есепке
+        Лекцияны оқыған соң тест тапсырасың. Практикада екі есепке
         берілгенін, формулаларын, толық шығарылуын және жауабын жазасың.
       </p>
     </section>
@@ -234,25 +242,25 @@ function renderWeeks() {
       ${courseData.weeks
         .map((week, index) => {
           const weekNo = index + 1;
-          const weekProgress = progress.weeks[weekNo];
-          const practiceCount = weekProgress.practices.filter(p => p.submitted).length;
-          const feedbackDone = weekProgress.feedback.trim() ? "Иә" : "Жоқ";
+          const wp = progress.weeks[weekNo];
+          const practiceDone = wp.practices.filter((p) => p.submitted).length;
+          const feedbackDone = wp.feedback.trim() ? "бар" : "жоқ";
 
           return `
-          <article class="week-card">
-            <div class="week-number">${weekNo}</div>
-            <h3>${week.title}</h3>
-            <p>${week.short}</p>
+            <article class="week-card">
+              <div class="week-number">${weekNo}</div>
+              <h3>${week.title}</h3>
+              <p>${week.short}</p>
 
-            <div class="week-meta">
-              <span class="tag">Тест: ${weekProgress.testDone ? weekProgress.testScore + "/4" : "орындалмаған"}</span>
-              <span class="tag">Практика: ${practiceCount}/2</span>
-              <span class="tag">Кері байланыс: ${feedbackDone}</span>
-            </div>
+              <div class="week-meta">
+                <span class="tag">Тест: ${wp.testDone ? wp.testScore + "/4" : "жоқ"}</span>
+                <span class="tag">Практика: ${practiceDone}/2</span>
+                <span class="tag">Кері байланыс: ${feedbackDone}</span>
+              </div>
 
-            <button class="week-btn" onclick="openWeek(${weekNo})">Аптаны ашу</button>
-          </article>
-        `;
+              <button class="week-btn" onclick="openWeek(${weekNo})">Аптаны ашу</button>
+            </article>
+          `;
         })
         .join("")}
     </section>
@@ -273,7 +281,8 @@ function openWeek(weekNo) {
           <p class="muted">${week.short}</p>
         </div>
         <div class="score-pill">
-          Тест: ${progress.testDone ? progress.testScore + "/4" : "0/4"} | Практика: ${progress.practices.filter(p => p.submitted).length}/2
+          Тест: ${progress.testDone ? progress.testScore + "/4" : "0/4"} |
+          Практика: ${progress.practices.filter((p) => p.submitted).length}/2
         </div>
       </div>
 
@@ -291,7 +300,10 @@ function openWeek(weekNo) {
 }
 
 function showWeekTab(weekNo, tab, el) {
-  document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.classList.remove("active");
+  });
+
   el.classList.add("active");
   renderWeekTabContent(weekNo, tab);
 }
@@ -316,35 +328,44 @@ function renderWeekTabContent(weekNo, tab) {
 
         <div class="card">
           <h3 class="section-subtitle">Лекция соңындағы тест</h3>
-          ${progress.testDone ? `<p class="locked-note">Тест бір рет тапсырылды. Нәтиже: ${progress.testScore}/4</p>` : ""}
-          <div id="testWrap">
-            ${week.tests
-              .map(
-                (item, idx) => `
+          ${
+            progress.testDone
+              ? `<p class="locked-note">Тест бір рет тапсырылды. Нәтиже: ${progress.testScore}/4</p>`
+              : ""
+          }
+
+          ${week.tests
+            .map(
+              (item, qIndex) => `
                 <div class="test-card question-item">
-                  <b>${idx + 1}. ${item.q}</b>
+                  <b>${qIndex + 1}. ${item.q}</b>
                   <div class="options-list">
                     ${item.options
                       .map(
-                        (opt, optIdx) => `
-                        <label class="option">
-                          <input type="radio" name="week${weekNo}_q${idx}" value="${optIdx}" ${progress.testDone ? "disabled" : ""}>
-                          <span>${opt}</span>
-                        </label>
-                      `
+                        (opt, optIndex) => `
+                          <label class="option">
+                            <input
+                              type="radio"
+                              name="week${weekNo}_q${qIndex}"
+                              value="${optIndex}"
+                              ${progress.testDone ? "disabled" : ""}
+                            >
+                            <span>${opt}</span>
+                          </label>
+                        `
                       )
                       .join("")}
                   </div>
                 </div>
               `
-              )
-              .join("")}
-            ${
-              progress.testDone
-                ? ""
-                : `<button class="submit-btn" onclick="submitWeekTest(${weekNo})">Тестті аяқтау</button>`
-            }
-          </div>
+            )
+            .join("")}
+
+          ${
+            progress.testDone
+              ? ""
+              : `<button class="submit-btn" onclick="submitWeekTest(${weekNo})">Тестті аяқтау</button>`
+          }
         </div>
       </div>
     `;
@@ -353,35 +374,36 @@ function renderWeekTabContent(weekNo, tab) {
   if (tab === "practice") {
     content.innerHTML = `
       <div class="warning-note">
-        Бұл бөлім Волькенштейннің механикаға арналған есептерінің <b>типіне негізделіп</b> жасалды.
-        Сайт форматына сай есеп мәтіндері сөзбе-сөз емес, мазмұнын сақтай отырып ықшамдалды.
+        Бұл бөлім Волькенштейн типіндегі механика есептеріне сай жасалған.
+        Әр есепке берілгенін, SI жүйесіне келтіруді, формуланы, толық шығарылуын және жауабын жазыңдар.
       </div>
 
       ${week.practices
-        .map((task, idx) => {
-          const item = progress.practices[idx];
+        .map((task, index) => {
+          const item = progress.practices[index];
+
           return `
-          <div class="practice-card">
-            <h3 class="section-subtitle">${task.title}</h3>
-            <p class="muted"><b>Шарт:</b> ${task.prompt}</p>
-            <p class="small-note"><b>Көмек:</b> ${task.hint}</p>
+            <div class="practice-card">
+              <h3 class="section-subtitle">${task.title}</h3>
+              <p class="muted"><b>Шарт:</b> ${task.prompt}</p>
+              <p class="small-note"><b>Көмек:</b> ${task.hint}</p>
 
-            <textarea
-              id="practice_${weekNo}_${idx}"
-              class="textarea"
-              placeholder="Берілгені, SI жүйесіне келтіру, негізгі формула, түрлендіру, есептеу, толық шығарылуы, жауабы..."
-              ${item.submitted ? "disabled" : ""}
-            >${item.content}</textarea>
+              <textarea
+                id="practice_${weekNo}_${index}"
+                class="textarea"
+                placeholder="Берілгені, SI жүйесіне келтіру, формула, түрлендіру, есептеу, толық шығарылуы, жауабы..."
+                ${item.submitted ? "disabled" : ""}
+              >${item.content}</textarea>
 
-            <div class="practice-actions">
-              ${
-                item.submitted
-                  ? `<span class="locked-note">Бұл есеп жіберілген.</span>`
-                  : `<button class="submit-btn" onclick="submitPractice(${weekNo}, ${idx})">Есепті жіберу</button>`
-              }
+              <div class="practice-actions">
+                ${
+                  item.submitted
+                    ? `<span class="locked-note">Бұл есеп жіберілген.</span>`
+                    : `<button class="submit-btn" onclick="submitPractice(${weekNo}, ${index})">Есепті жіберу</button>`
+                }
+              </div>
             </div>
-          </div>
-        `;
+          `;
         })
         .join("")}
     `;
@@ -392,11 +414,15 @@ function renderWeekTabContent(weekNo, tab) {
       <div class="feedback-card">
         <h3 class="section-subtitle">Кері байланыс</h3>
         <p class="muted">
-          Бұл бөлімде студент қай жері түсініксіз болғанын, қай формула қиын болғанын,
-          немесе қосымша түсіндіруді қажет ететін тұстарын жазады.
+          Қай жері түсініксіз болғанын, қандай формула қиын болғанын,
+          немесе тағы нені қайталау керек екенін жазыңдар.
         </p>
 
-        <textarea id="feedbackArea" class="textarea" placeholder="Мысалы: Ньютонның үшінші заңындағы күштердің қай денелерге әсер ететінін шатастырдым...">${progress.feedback}</textarea>
+        <textarea
+          id="feedbackArea"
+          class="textarea"
+          placeholder="Мысалы: Бұл аптада үдеу формулаларын ажырату қиын болды..."
+        >${progress.feedback}</textarea>
 
         <div class="practice-actions">
           <button class="submit-btn" onclick="saveFeedback(${weekNo})">Кері байланысты сақтау</button>
@@ -416,13 +442,16 @@ function submitWeekTest(weekNo) {
   const week = courseData.weeks[weekNo - 1];
   const progress = getCurrentProgress().weeks[weekNo];
 
-  if (progress.testDone) return;
+  if (progress.testDone) {
+    return;
+  }
 
   let score = 0;
   const selectedAnswers = [];
 
   for (let i = 0; i < week.tests.length; i++) {
     const checked = document.querySelector(`input[name="week${weekNo}_q${i}"]:checked`);
+
     if (!checked) {
       alert("Барлық сұраққа жауап бер.");
       return;
@@ -430,30 +459,33 @@ function submitWeekTest(weekNo) {
 
     const value = Number(checked.value);
     selectedAnswers.push(value);
-    if (value === week.tests[i].answer) score++;
+
+    if (value === week.tests[i].answer) {
+      score++;
+    }
   }
 
   progress.testDone = true;
   progress.testScore = score;
   progress.selectedAnswers = selectedAnswers;
-  saveState();
 
+  saveState();
   alert(`Тест аяқталды. Нәтиже: ${score}/4`);
   openWeek(weekNo);
 }
 
-function submitPractice(weekNo, taskIdx) {
-  const textarea = document.getElementById(`practice_${weekNo}_${taskIdx}`);
+function submitPractice(weekNo, taskIndex) {
+  const textarea = document.getElementById(`practice_${weekNo}_${taskIndex}`);
   const text = textarea.value.trim();
 
   if (text.length < 30) {
-    alert("Есептің берілгенін, формуласын және толық шығарылуын толығырақ жаз.");
+    alert("Есептің толық шығарылуын толығырақ жаз.");
     return;
   }
 
   const progress = getCurrentProgress().weeks[weekNo];
-  progress.practices[taskIdx].submitted = true;
-  progress.practices[taskIdx].content = text;
+  progress.practices[taskIndex].submitted = true;
+  progress.practices[taskIndex].content = text;
 
   saveState();
   alert("Есеп жіберілді.");
@@ -463,7 +495,9 @@ function submitPractice(weekNo, taskIdx) {
 function saveFeedback(weekNo) {
   const text = document.getElementById("feedbackArea").value.trim();
   const progress = getCurrentProgress().weeks[weekNo];
+
   progress.feedback = text;
+
   saveState();
   alert("Кері байланыс сақталды.");
   renderWeekTabContent(weekNo, "feedback");
@@ -471,22 +505,28 @@ function saveFeedback(weekNo) {
 
 function calculateResults() {
   const progress = getCurrentProgress();
-  const totalTestQuestions = courseData.weeks.length * 4;
 
   let earnedTestQuestions = 0;
   let completedPractices = 0;
   let completedFeedbacks = 0;
 
-  courseData.weeks.forEach((_, idx) => {
-    const weekNo = idx + 1;
-    const weekProgress = progress.weeks[weekNo];
-    earnedTestQuestions += weekProgress.testScore;
-    completedPractices += weekProgress.practices.filter(p => p.submitted).length;
-    if (weekProgress.feedback.trim()) completedFeedbacks++;
+  courseData.weeks.forEach((week, index) => {
+    const weekNo = index + 1;
+    const wp = progress.weeks[weekNo];
+
+    earnedTestQuestions += wp.testScore;
+    completedPractices += wp.practices.filter((p) => p.submitted).length;
+
+    if (wp.feedback.trim()) {
+      completedFeedbacks++;
+    }
   });
 
+  const totalTestQuestions = courseData.weeks.length * 4;
+  const totalPracticeCount = courseData.weeks.length * 2;
+
   const lecturePoints = round2((earnedTestQuestions / totalTestQuestions) * 20);
-  const practicePoints = round2((completedPractices / (courseData.weeks.length * 2)) * 50);
+  const practicePoints = round2((completedPractices / totalPracticeCount) * 50);
   const feedbackPoints = round2((completedFeedbacks / courseData.weeks.length) * 10);
   const finalPoints = round2((progress.finalQuizScore / courseData.finalQuiz.length) * 20);
 
@@ -498,9 +538,9 @@ function calculateResults() {
     feedbackPoints,
     finalPoints,
     total,
+    earnedTestQuestions,
     completedPractices,
-    completedFeedbacks,
-    earnedTestQuestions
+    completedFeedbacks
   };
 }
 
@@ -519,8 +559,8 @@ function renderResults() {
     <section class="card">
       <h2 class="section-title">15 аптаның нәтижесі</h2>
       <p class="muted">
-        Мұнда лекциялық бақылау, практикалық жұмыстар, кері байланыс және қорытынды бақылау бойынша
-        жинақталған жалпы нәтиже көрсетіледі.
+        Бұл бөлімде лекциялық бақылау, практикалық жұмыс, кері байланыс
+        және қорытынды бақылау бойынша жинақталған жалпы нәтиже көрсетіледі.
       </p>
 
       <div class="result-grid">
@@ -529,16 +569,19 @@ function renderResults() {
           <div class="result-number">${result.lecturePoints}</div>
           <div class="small-note">20 баллдан</div>
         </div>
+
         <div class="result-box">
           <h4>Практикалық жұмыс</h4>
           <div class="result-number">${result.practicePoints}</div>
           <div class="small-note">50 баллдан</div>
         </div>
+
         <div class="result-box">
           <h4>Кері байланыс</h4>
           <div class="result-number">${result.feedbackPoints}</div>
           <div class="small-note">10 баллдан</div>
         </div>
+
         <div class="result-box">
           <h4>Қорытынды бақылау</h4>
           <div class="result-number">${result.finalPoints}</div>
@@ -546,7 +589,7 @@ function renderResults() {
         </div>
       </div>
 
-      <div class="card" style="margin-top: 18px;">
+      <div class="card" style="margin-top:18px;">
         <h3 class="section-subtitle">Жалпы қорытынды</h3>
         <p class="muted">Жалпы балл: <b>${result.total}</b> / 100</p>
         <p class="muted">Баға: <b>${getGradeLabel(result.total)}</b></p>
@@ -557,21 +600,29 @@ function renderResults() {
 
       <div class="progress-list">
         ${courseData.weeks
-          .map((week, idx) => {
-            const weekNo = idx + 1;
+          .map((week, index) => {
+            const weekNo = index + 1;
             const wp = progress.weeks[weekNo];
-            const done = wp.testDone && wp.practices.every(p => p.submitted) && wp.feedback.trim();
+            const fullDone =
+              wp.testDone &&
+              wp.practices.every((p) => p.submitted) &&
+              wp.feedback.trim();
+
             return `
               <div class="progress-row">
                 <div class="progress-left">
                   <span class="week-number">${weekNo}</span>
                   <div>
                     <b>${week.title}</b>
-                    <div class="small-note">Тест: ${wp.testDone ? wp.testScore + "/4" : "жоқ"} | Практика: ${wp.practices.filter(p => p.submitted).length}/2 | Кері байланыс: ${wp.feedback.trim() ? "бар" : "жоқ"}</div>
+                    <div class="small-note">
+                      Тест: ${wp.testDone ? wp.testScore + "/4" : "жоқ"} |
+                      Практика: ${wp.practices.filter((p) => p.submitted).length}/2 |
+                      Кері байланыс: ${wp.feedback.trim() ? "бар" : "жоқ"}
+                    </div>
                   </div>
                 </div>
-                <div class="progress-status ${done ? "status-good" : "status-bad"}">
-                  ${done ? "Аяқталған" : "Толық емес"}
+                <div class="progress-status ${fullDone ? "status-good" : "status-bad"}">
+                  ${fullDone ? "Аяқталған" : "Толық емес"}
                 </div>
               </div>
             `;
@@ -581,7 +632,18 @@ function renderResults() {
     </section>
 
     ${renderFinalQuizBlock(progress)}
-    ${progress.finalQuizDone ? renderCertificateBlock(result.total) : ""}
+
+    ${
+      progress.finalQuizDone
+        ? `
+          <section class="card">
+            <h3 class="section-subtitle">Курс аяқталды</h3>
+            <p class="muted">15 апта толық аяқталған соң сертификатты ашуға болады.</p>
+            <button class="print-btn" onclick="openCertificate()">Сертификат</button>
+          </section>
+        `
+        : ""
+    }
   `;
 }
 
@@ -590,7 +652,9 @@ function renderFinalQuizBlock(progress) {
     return `
       <section class="card final-quiz-card">
         <h3 class="section-subtitle">Қорытынды бақылау</h3>
-        <p class="locked-note">Қорытынды бақылау тапсырылды. Нәтиже: ${progress.finalQuizScore}/${courseData.finalQuiz.length}</p>
+        <p class="locked-note">
+          Қорытынды бақылау тапсырылды. Нәтиже: ${progress.finalQuizScore}/${courseData.finalQuiz.length}
+        </p>
       </section>
     `;
   }
@@ -604,23 +668,23 @@ function renderFinalQuizBlock(progress) {
 
       ${courseData.finalQuiz
         .map(
-          (item, idx) => `
-          <div class="question-item">
-            <b>${idx + 1}. ${item.q}</b>
-            <div class="options-list">
-              ${item.options
-                .map(
-                  (opt, optIdx) => `
-                  <label class="option">
-                    <input type="radio" name="final_q${idx}" value="${optIdx}">
-                    <span>${opt}</span>
-                  </label>
-                `
-                )
-                .join("")}
+          (item, qIndex) => `
+            <div class="question-item">
+              <b>${qIndex + 1}. ${item.q}</b>
+              <div class="options-list">
+                ${item.options
+                  .map(
+                    (opt, optIndex) => `
+                      <label class="option">
+                        <input type="radio" name="final_q${qIndex}" value="${optIndex}">
+                        <span>${opt}</span>
+                      </label>
+                    `
+                  )
+                  .join("")}
+              </div>
             </div>
-          </div>
-        `
+          `
         )
         .join("")}
 
@@ -637,47 +701,80 @@ function submitFinalQuiz() {
 
   for (let i = 0; i < courseData.finalQuiz.length; i++) {
     const checked = document.querySelector(`input[name="final_q${i}"]:checked`);
+
     if (!checked) {
       alert("Қорытынды бақылауда барлық сұраққа жауап бер.");
       return;
     }
+
     const value = Number(checked.value);
     selected.push(value);
-    if (value === courseData.finalQuiz[i].answer) score++;
+
+    if (value === courseData.finalQuiz[i].answer) {
+      score++;
+    }
   }
 
   progress.finalQuizDone = true;
   progress.finalQuizScore = score;
   progress.finalSelectedAnswers = selected;
-  saveState();
 
+  saveState();
   alert(`Қорытынды бақылау аяқталды. Нәтиже: ${score}/${courseData.finalQuiz.length}`);
   renderResults();
 }
 
-function renderCertificateBlock(total) {
-  const grade = getGradeLabel(total);
+function openCertificate() {
+  const result = calculateResults();
 
+  viewContainer.innerHTML = `
+    <section class="card">
+      <span class="back-link" onclick="renderView('results')">← Нәтиже бетіне қайту</span>
+      ${renderCertificateBlock(result.total)}
+    </section>
+  `;
+}
+
+function renderCertificateBlock(total) {
   return `
-    <section class="card certificate-card">
-      <h3 class="section-subtitle">Сертификат</h3>
-      <div class="certificate">
-        <img src="logo.png" alt="Zhansibekov University" class="logo" />
-        <h2>ZHANIBEKOV UNIVERSITY</h2>
-        <h3>СЕРТИФИКАТ</h3>
-        <p>Осы сертификат</p>
-        <div class="cert-name">${state.currentStudent.name}</div>
-        <p>
-          <b>${courseData.subject}</b> пәні бойынша 15 апталық онлайн курсты
-          аяқтағанын растайды.
-        </p>
-        <p class="cert-score">Жалпы балл: ${total} / 100</p>
-        <p><b>Деңгейі:</b> ${grade}</p>
-        <p>
-          Оқытушылар: ${courseData.teachers.join(", ")}
-        </p>
-        <p>${new Date().toLocaleDateString("kk-KZ")}</p>
+    <section class="certificate-card">
+      <div class="certificate custom-cert">
+        <div class="cert-border">
+          <div class="cert-inner">
+            <h2 class="cert-title-main">СЕРТИФИКАТ</h2>
+
+            <p class="cert-text">
+              Осы сертификат жас маманға 15 апталық
+              <b>«Механика»</b> бөлімін толық меңгеріп,
+              төзімділік пен білімге деген құштарлық танытқаны үшін табысталады.
+            </p>
+
+            <div class="cert-name">${state.currentStudent.name}</div>
+
+            <p class="cert-text">
+              Бұл тек бастамасы! Алдағы сабақтарға сәттілік!
+            </p>
+
+            <div class="cert-info">
+              <div><b>Жалпы балл:</b> ${total} / 100</div>
+              <div><b>Бағасы:</b> ${getGradeLabel(total)}</div>
+            </div>
+
+            <div class="cert-awarders">
+              <h4>Табыстағандар:</h4>
+              <p>• Сенби Диана</p>
+              <p>• Илес Диана</p>
+              <p>• Рахматулла Ернар</p>
+            </div>
+
+            <div class="cert-footer-line">
+              <span>Шымкент, 2026</span>
+              <span>«Механика» бөлімі бойынша жетістік сертификаты</span>
+            </div>
+          </div>
+        </div>
       </div>
+
       <button class="print-btn" onclick="window.print()">Сертификатты шығару</button>
     </section>
   `;
@@ -685,54 +782,4 @@ function renderCertificateBlock(total) {
 
 function round2(num) {
   return Math.round(num * 100) / 100;
-}
-function renderCertificateBlock(total) {
-  const grade = getGradeLabel(total);
-
-  return `
-    <section class="card certificate-card">
-      <div class="certificate">
-        <div class="cert-top">
-          <img src="logo.png" alt="Zhansibekov University" class="cert-logo" />
-          <h2>ZHANIBEKOV UNIVERSITY</h2>
-          <p class="cert-mini">МЕХАНИКА ПӘНІ БОЙЫНША ОНЛАЙН КУРС</p>
-        </div>
-
-        <h3>СЕРТИФИКАТ</h3>
-
-        <p class="cert-text">Осы сертификат</p>
-
-        <div class="cert-name">${state.currentStudent.name}</div>
-
-        <p class="cert-text">
-          <b>«${courseData.subject}»</b> пәні бойынша 15 апталық онлайн курсты
-          толық аяқтағанын растайды.
-        </p>
-
-        <div class="cert-info">
-          <div><b>Жалпы балл:</b> ${total} / 100</div>
-          <div><b>Бағасы:</b> ${grade}</div>
-          <div><b>Оқытушылар:</b> ${courseData.teachers.join(", ")}</div>
-          <div><b>Күні:</b> ${new Date().toLocaleDateString("kk-KZ")}</div>
-        </div>
-
-        <div class="cert-signs">
-          <div class="sign-box">
-            <div class="sign-line"></div>
-            <span>Сенби Диана</span>
-          </div>
-          <div class="sign-box">
-            <div class="sign-line"></div>
-            <span>Илес Диана</span>
-          </div>
-          <div class="sign-box">
-            <div class="sign-line"></div>
-            <span>Рахматулла Ернар</span>
-          </div>
-        </div>
-      </div>
-
-      <button class="print-btn" onclick="window.print()">Сертификатты шығару</button>
-    </section>
-  `;
 }
