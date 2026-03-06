@@ -724,3 +724,89 @@ body {
     display: none !important;
   }
 }
+.certificate-card {
+  background: linear-gradient(180deg, #ffffff 0%, #faf7ff 100%);
+  border: 2px solid #d7c6ff;
+}
+
+.certificate {
+  background: #fff;
+  border: 6px solid #eadfff;
+  border-radius: 28px;
+  padding: 40px 30px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(120, 90, 200, 0.08);
+}
+
+.cert-top {
+  margin-bottom: 20px;
+}
+
+.cert-logo {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.certificate h2 {
+  margin: 0;
+  font-size: 30px;
+  color: #6f52d9;
+}
+
+.cert-mini {
+  margin-top: 6px;
+  color: #7d6f9f;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+.certificate h3 {
+  margin: 24px 0 14px;
+  font-size: 34px;
+  color: #b48a1f;
+  letter-spacing: 2px;
+}
+
+.cert-text {
+  font-size: 17px;
+  color: #3a3156;
+  line-height: 1.7;
+}
+
+.cert-name {
+  margin: 20px 0;
+  font-size: 34px;
+  font-weight: 700;
+  color: #4b347f;
+}
+
+.cert-info {
+  margin-top: 22px;
+  display: grid;
+  gap: 10px;
+  font-size: 17px;
+  color: #3a3156;
+}
+
+.cert-signs {
+  margin-top: 35px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.sign-box {
+  text-align: center;
+}
+
+.sign-line {
+  border-top: 2px solid #6f52d9;
+  margin-bottom: 8px;
+}
+
+.sign-box span {
+  font-size: 14px;
+  color: #5f5280;
+}
