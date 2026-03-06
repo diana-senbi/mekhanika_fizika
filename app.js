@@ -686,3 +686,53 @@ function renderCertificateBlock(total) {
 function round2(num) {
   return Math.round(num * 100) / 100;
 }
+function renderCertificateBlock(total) {
+  const grade = getGradeLabel(total);
+
+  return `
+    <section class="card certificate-card">
+      <div class="certificate">
+        <div class="cert-top">
+          <img src="logo.png" alt="Zhansibekov University" class="cert-logo" />
+          <h2>ZHANIBEKOV UNIVERSITY</h2>
+          <p class="cert-mini">МЕХАНИКА ПӘНІ БОЙЫНША ОНЛАЙН КУРС</p>
+        </div>
+
+        <h3>СЕРТИФИКАТ</h3>
+
+        <p class="cert-text">Осы сертификат</p>
+
+        <div class="cert-name">${state.currentStudent.name}</div>
+
+        <p class="cert-text">
+          <b>«${courseData.subject}»</b> пәні бойынша 15 апталық онлайн курсты
+          толық аяқтағанын растайды.
+        </p>
+
+        <div class="cert-info">
+          <div><b>Жалпы балл:</b> ${total} / 100</div>
+          <div><b>Бағасы:</b> ${grade}</div>
+          <div><b>Оқытушылар:</b> ${courseData.teachers.join(", ")}</div>
+          <div><b>Күні:</b> ${new Date().toLocaleDateString("kk-KZ")}</div>
+        </div>
+
+        <div class="cert-signs">
+          <div class="sign-box">
+            <div class="sign-line"></div>
+            <span>Сенби Диана</span>
+          </div>
+          <div class="sign-box">
+            <div class="sign-line"></div>
+            <span>Илес Диана</span>
+          </div>
+          <div class="sign-box">
+            <div class="sign-line"></div>
+            <span>Рахматулла Ернар</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="print-btn" onclick="window.print()">Сертификатты шығару</button>
+    </section>
+  `;
+}
