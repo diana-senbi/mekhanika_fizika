@@ -810,3 +810,72 @@ body {
   font-size: 14px;
   color: #5f5280;
 }
+.custom-cert {
+  background: linear-gradient(180deg, #fffdf8 0%, #fffaf0 100%);
+  padding: 24px;
+  border-radius: 24px;
+}
+
+.cert-border {
+  border: 6px solid #d4af37;
+  padding: 10px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #fffefb 0%, #fff9ea 100%);
+}
+
+.cert-inner {
+  border: 2px solid #e7cf7a;
+  border-radius: 18px;
+  padding: 40px 28px;
+  text-align: center;
+  background: white;
+}
+
+.cert-title-main {
+  font-size: 42px;
+  margin: 0 0 24px;
+  color: #b3871e;
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+
+.custom-cert .cert-text {
+  font-size: 18px;
+  line-height: 1.8;
+  color: #3a3156;
+  margin: 18px 0;
+}
+
+.custom-cert .cert-name {
+  margin: 28px 0;
+  font-size: 34px;
+  font-weight: 700;
+  color: #5f3dc4;
+}
+
+.cert-awarders {
+  margin-top: 28px;
+  font-size: 18px;
+  color: #3a3156;
+}
+
+.cert-awarders h4 {
+  margin-bottom: 10px;
+  color: #7a5c00;
+}
+
+.cert-awarders p {
+  margin: 6px 0;
+}
+
+.cert-footer-line {
+  margin-top: 34px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 15px;
+  color: #6d5b2d;
+  border-top: 1px solid #eadba3;
+  padding-top: 14px;
+}
