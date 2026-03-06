@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Механика | Онлайн курс</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="loginScreen" class="login-page">
+    <div class="login-card">
+      <h1 class="login-title">Жеке кабинетке кіру</h1>
+
+      <label class="field-label">Тіл</label>
+      <select id="langSelect" class="input">
+        <option value="kk">Қазақша</option>
+      </select>
+
+      <label class="field-label">Логин</label>
+      <input id="loginInput" class="input" type="text" placeholder="Логин" />
+
+      <div class="password-head">
+        <label class="field-label">Құпия сөз</label>
+      </div>
+      <input id="passwordInput" class="input" type="password" placeholder="Құпия сөз" />
+
+      <button id="loginBtn" class="primary-btn">Кіру</button>
+      <p id="loginError" class="error-text"></p>
+
+      <div class="login-footer">
+        <p>Пән: <b>Механика</b></p>
+        <p>Оқытушылар: Сенби Диана, Илес Диана, Рахматулла Ернар</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="appScreen" class="app hidden">
+    <header class="topbar">
+      <div class="topbar-left">
+        <img src="logo.png" alt="Zhansibekov University" class="logo" />
+        <div>
+          <h1 class="site-title">Механика</h1>
+          <p class="site-subtitle">15 апталық онлайн курс</p>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="student-badge">
+          <span>Студент:</span>
+          <b id="studentName"></b>
+        </div>
+        <button id="logoutBtn" class="ghost-btn">Шығу</button>
+      </div>
+    </header>
+
+    <nav class="nav-tabs">
+      <button class="nav-btn active" data-view="home">Басты бет</button>
+      <button class="nav-btn" data-view="weeks">15 апта</button>
+      <button class="nav-btn" data-view="results">15 аптаның нәтижесі</button>
+    </nav>
+
+    <main id="viewContainer" class="main-content"></main>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
